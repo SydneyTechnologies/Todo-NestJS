@@ -1,4 +1,4 @@
-import { Body, Controller, Get, ParseIntPipe, Post, Put, Query, Delete, Param, ParseBoolPipe, ValidationPipe} from '@nestjs/common';
+import { Body, Controller, Get, ParseIntPipe, Post, Put, Query, Delete, Param, ParseBoolPipe, ValidationPipe, HttpException, HttpStatus} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTodoDto, UpdateTodoDto } from './dto/todo.dto';
 import { ApiQuery, ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
@@ -43,7 +43,18 @@ export class TodoController {
         description: "The id of the specific Todo you wish to update"
     })
     async UpdateTodo(@Param('id') id: string, @Body() updateData: UpdateTodoDto){
-        return await this.prisma.todo.update({where: {id}, data:  updateData});
+        const todo = await this.prisma.todo.findFirst({where: {id:id}})
+        var reminder = false
+        if (todo){
+            if(todo.reminder){
+                const date = new Date()
+                reminder = todo.reminder < date
+            }
+            return await this.prisma.todo.update({where: {id}, data:  {...updateData, duration_passed: reminder}});
+        }
+        else{
+            throw new HttpException("Todo not found", HttpStatus.NOT_FOUND)
+        }
     }
 
 
