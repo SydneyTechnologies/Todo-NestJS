@@ -30,7 +30,12 @@ export class TodoController {
     @Post()
     @ApiOperation({summary: "Create a new Todo"})
     async createTodo(@Body() data: CreateTodoDto){
-        return await this.prisma.todo.create({data: data});
+        var reminder = false
+        if(data.reminder){
+            const date = new Date()
+            reminder = data.reminder < date
+        }
+        return await this.prisma.todo.create({data: {...data, duration_passed:reminder}});
     }
 
 
