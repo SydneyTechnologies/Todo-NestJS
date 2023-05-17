@@ -33,7 +33,9 @@ export class TodoController {
         var reminder = false
         if(data.reminder){
             const date = new Date()
-            reminder = data.reminder < date
+            const reminderDate = new Date(data.reminder)
+            reminder = reminderDate < date
+            console.log(reminder, date, data.reminder)
         }
         return await this.prisma.todo.create({data: {...data, duration_passed:reminder}});
     }
